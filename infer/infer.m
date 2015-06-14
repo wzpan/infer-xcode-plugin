@@ -40,11 +40,11 @@
     
     // Create menu items, initialize UI, etc.
     // Sample Menu Item:
-    NSMenuItem *menuItem = [[NSApp mainMenu] itemWithTitle:@"Edit"];
+    NSMenuItem *menuItem = [[NSApp mainMenu] itemWithTitle:@"Product"];
     if (menuItem) {
         [[menuItem submenu] addItem:[NSMenuItem separatorItem]];
-        NSMenuItem *actionMenuItem = [[NSMenuItem alloc] initWithTitle:@"Infer" action:@selector(doInfer) keyEquivalent:@""];
-        //[actionMenuItem setKeyEquivalentModifierMask:NSAlphaShiftKeyMask | NSControlKeyMask];
+        NSMenuItem *actionMenuItem = [[NSMenuItem alloc] initWithTitle:@"Infer" action:@selector(doInfer) keyEquivalent:@"I"];
+        [actionMenuItem setKeyEquivalentModifierMask:NSAlphaShiftKeyMask | NSControlKeyMask];
         [actionMenuItem setTarget:self];
         [[menuItem submenu] addItem:actionMenuItem];
     }
@@ -65,29 +65,24 @@
     NSArray *args = [NSArray arrayWithObjects:path.description, projectURL, nil];
     
     NSTask *task = [[NSTask alloc] init];
-    NSPipe *outputPipe = [NSPipe pipe];
-    NSPipe *errorPipe = [NSPipe pipe];
-    [task setStandardOutput: outputPipe];
-    [task setStandardError: errorPipe];
+    
+    NSPipe *pipe = [NSPipe pipe];
+    [task setStandardOutput: pipe];
+    [task setStandardError: pipe];
     
     [task setLaunchPath:shellString];
     [task setArguments:args];
     
-    NSFileHandle *outputFileHandler = [outputPipe fileHandleForReading];
-    NSFileHandle *errorFileHandler = [errorPipe fileHandleForReading];
+    NSFileHandle *file = [pipe fileHandleForReading];
     
     [task launch];
     [task waitUntilExit];
     
     // Task launched now just read and print the data
-    NSData *data = [outputFileHandler readDataToEndOfFile];
+    NSData *data = [file readDataToEndOfFile];
     NSString *outPutValue = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
     
-    NSData *errorData = [errorFileHandler readDataToEndOfFile];
-    NSString *errorValue = [[NSString alloc] initWithData:errorData encoding:NSUTF8StringEncoding];
-    
-    NSLog(@"[Error] infer: %@", errorValue);
-    NSLog(@"[Info] infer: %@", outPutValue);
+    NSLog(@"infer: %@", outPutValue);
 }
 
 
